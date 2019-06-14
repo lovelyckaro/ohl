@@ -1,0 +1,54 @@
+version: '2'
+
+services:
+  app:
+    image: kodamera/php-apache-drupal-8-dev:latest
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html:cached
+      # (Optional) Use your host composer cache.
+      - ~/.composer/cache:/var/www/.composer/cache/:delegated
+      # (Optional) Use your host drush commands.
+      # - ~/.drush/commands:/var/www/.drush/commands/:cached
+    ports:
+      - 80:80
+    environment:
+      XDEBUG_CONFIG: "remote_host=docker.for.mac.host.internal"
+      PHP_IDE_CONFIG: "serverName=docker"
+      SIMPLETEST_BASE_URL: http://localhost
+      SIMPLETEST_DB: mysql://drupal:drupal@db:3306/drupal
+      SIMPLESAMLPHP_CONFIG_DIR: /etc/simplesamlphp/config
+      COMPOSER_MEMORY_LIMIT: 3G
+
+  db:
+    image: mysql:5.7
+    volumes:
+      # Use named volume for db data, so that it can persist. (Clear with `docker-compose down -v`)
+      - dbdata:/var/lib/mysql:delegated
+      # Put your SQL dump in the data/web dir, and mysql will import it automatically.
+      - ./data/web:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=adflarn600g
+      - MYSQL_DATABASE=drupal
+      - MYSQL_USER=drupal
+      - MYSQL_PASSWORD=drupal
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1025:1025
+      - 8025:8025
+
+  # (Optional) Blackfire.io profiling.
+  # 1. You need to register on https://blackfire.io/ to enable Blackfire.
+  # 2. You need to export the environment variables, eg. in your bash profile.
+  # blackfire:
+  #   image: blackfire/blackfire
+  #   environment:
+  #     - BLACKFIRE_SERVER_ID
+  #     - BLACKFIRE_SERVER_TOKEN
+
+volumes:
+  dbdata:
