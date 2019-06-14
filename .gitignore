@@ -1,0 +1,6 @@
+# Ignore npm-managed dependencies.
+node_modules/
+
+# Ignore editor files.
+/.idea
+.editorconfig
